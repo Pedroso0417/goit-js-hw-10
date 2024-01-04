@@ -1,0 +1,28 @@
+/* styles.css */
+
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 20px;
+}
+
+.breed-select {
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.loader {
+  display: block; /* Initially hidden */
+  color: #333;
+  font-weight: bold;
+}
+
+.error {
+  display: none; /* Initially hidden */
+  color: #ff0000;
+}
+
+.cat-info {
+  margin-top: 20px;
+}
+
+/* Add more styles as needed */
