@@ -1,46 +1,33 @@
 import { fetchBreeds, fetchCatByBreed } from './cat-api';
 
-////////////////////////////////////////////////////////////
-
+// Function to fetch breeds
+// cat-api.js
 const breedSelectEl = document.querySelector('.breed-select');
 const catInfoEl = document.querySelector('.cat-info');
 const loaderEl = document.querySelector('.loader');
 const errorEl = document.querySelector('.error');
-
-////////////////////////////////////////////////////////////
-
-// for creating the options
+// Function to fetch breeds
 function chooseBreed(data) {
   fetchBreeds(data)
     .then(data => {
-      //   console.log(data);
       loaderEl.classList.replace('loader', 'is-hidden');
-
       let optionsMarkup = data.map(({ name, id }) => {
         return `<option value ='${id}'>${name}</option>`;
       });
-
       breedSelectEl.insertAdjacentHTML('beforeend', optionsMarkup);
-      breedSelectEl.classList.remove('is-hidden'); // Show select element after options are added
+      breedSelectEl.classList.remove('is-hidden');
     })
     .catch(onError);
 }
 
 chooseBreed();
 
-////////////////////////////////////////////////////////////
-
 function createMarkup(event) {
-  // Show loader while loading
   loaderEl.classList.replace('is-hidden', 'loader');
-  // Hide select element and cat info markup while loading
   breedSelectEl.classList.add('is-hidden');
   catInfoEl.classList.add('is-hidden');
 
   const breedId = event.target.value;
-  //   get the option value using event.target.value
-  //   console.log(event.target);
-  //   console.log(event.target.value);
 
   fetchCatByBreed(breedId)
     .then(data => {
@@ -65,11 +52,6 @@ function createMarkup(event) {
 
 breedSelectEl.addEventListener('change', createMarkup);
 
-////////////////////////////////////////////////////////////
-
 function onError() {
-  // Show error Message
   errorEl.classList.remove('is-hidden');
-  //   Hide select element
-  breedSelectEl.classList.add('is-hidden');
 }

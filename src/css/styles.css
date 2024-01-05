@@ -64,11 +64,13 @@ body {
 }
 
 .loader {
+  display: block;
   font-size: 18px;
   font-weight: 600;
 }
 
 .error {
+  display: none;
   font-weight: 16px;
   font-weight: 500;
   color: red;
