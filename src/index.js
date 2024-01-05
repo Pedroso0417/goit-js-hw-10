@@ -1,77 +1,75 @@
-import axios from 'axios';
+import { fetchBreeds, fetchCatByBreed } from './cat-api';
 
-// Set the API key in the headers for all requests
-axios.defaults.headers.common['x-api-key'] = 'your_key';
+////////////////////////////////////////////////////////////
 
-// Function to fetch breeds
-export function fetchBreeds() {
-  // Show loader while the request is in progress
-  document.querySelector('select.breed-select').style.display = 'none';
-  document.querySelector('div.cat-info').style.display = 'none';
-  document.querySelector('p.loader').style.display = 'block';
-  document.querySelector('p.error').style.display = 'none';
+const breedSelectEl = document.querySelector('.breed-select');
+const catInfoEl = document.querySelector('.cat-info');
+const loaderEl = document.querySelector('.loader');
+const errorEl = document.querySelector('.error');
 
-  return new Promise((resolve, reject) => {
-    axios
-      .get('https://api.thecatapi.com/v1/breeds')
-      .then(response => {
-        const breeds = response.data;
-        // Populate the breed-select options
-        const breedSelect = document.querySelector('select.breed-select');
-        breedSelect.innerHTML = '';
-        breeds.forEach(breed => {
-          const option = document.createElement('option');
-          option.value = breed.id;
-          option.text = breed.name;
-          breedSelect.appendChild(option);
-        });
+////////////////////////////////////////////////////////////
 
-        // Hide loader and show breed-select
-        document.querySelector('select.breed-select').style.display = 'block';
-        document.querySelector('p.loader').style.display = 'none';
+// for creating the options
+function chooseBreed(data) {
+  fetchBreeds(data)
+    .then(data => {
+      //   console.log(data);
+      loaderEl.classList.replace('loader', 'is-hidden');
 
-        resolve(breeds);
-      })
-      .catch(error => {
-        // Show error message
-        document.querySelector('p.error').style.display = 'block';
-        document.querySelector('p.loader').style.display = 'none';
-        reject(error);
+      let optionsMarkup = data.map(({ name, id }) => {
+        return `<option value ='${id}'>${name}</option>`;
       });
-  });
+
+      breedSelectEl.insertAdjacentHTML('beforeend', optionsMarkup);
+      breedSelectEl.classList.remove('is-hidden'); // Show select element after options are added
+    })
+    .catch(onError);
 }
 
-// Function to fetch cat information by breed
-export function fetchCatByBreed(breedId) {
-  // Show loader while the request is in progress
-  document.querySelector('div.cat-info').style.display = 'none';
-  document.querySelector('p.loader').style.display = 'block';
-  document.querySelector('p.error').style.display = 'none';
+chooseBreed();
 
-  return new Promise((resolve, reject) => {
-    axios
-      .get(`https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}`)
-      .then(response => {
-        const catData = response.data[0];
-        const catInfo = document.querySelector('div.cat-info');
-        catInfo.innerHTML = `
-          <img src="${catData.url}" alt="Cat Image">
-          <p><strong>Breed:</strong> ${catData.breeds[0].name}</p>
-          <p><strong>Description:</strong> ${catData.breeds[0].description}</p>
-          <p><strong>Temperament:</strong> ${catData.breeds[0].temperament}</p>
-        `;
+////////////////////////////////////////////////////////////
 
-        // Hide loader and show cat-info
-        document.querySelector('div.cat-info').style.display = 'block';
-        document.querySelector('p.loader').style.display = 'none';
+function createMarkup(event) {
+  // Show loader while loading
+  loaderEl.classList.replace('is-hidden', 'loader');
+  // Hide select element and cat info markup while loading
+  breedSelectEl.classList.add('is-hidden');
+  catInfoEl.classList.add('is-hidden');
 
-        resolve(catData);
-      })
-      .catch(error => {
-        // Show error message
-        document.querySelector('p.error').style.display = 'block';
-        document.querySelector('p.loader').style.display = 'none';
-        reject(error);
-      });
-  });
+  const breedId = event.target.value;
+  //   get the option value using event.target.value
+  //   console.log(event.target);
+  //   console.log(event.target.value);
+
+  fetchCatByBreed(breedId)
+    .then(data => {
+      loaderEl.classList.replace('loader', 'is-hidden');
+      breedSelectEl.classList.remove('is-hidden');
+
+      const { url, breeds } = data[0];
+      const { name, description, temperament } = breeds[0];
+
+      catInfoEl.innerHTML = `
+      <img src="${url}" alt="${name}" width="400"/>
+      <div class="box">
+        <h2>${name}</h2>
+        <p>${description}</p>
+        <p><strong>Temperament:</strong> ${temperament}</p>
+      </div>
+      `;
+      catInfoEl.classList.remove('is-hidden');
+    })
+    .catch(onError);
+}
+
+breedSelectEl.addEventListener('change', createMarkup);
+
+////////////////////////////////////////////////////////////
+
+function onError() {
+  // Show error Message
+  errorEl.classList.remove('is-hidden');
+  //   Hide select element
+  breedSelectEl.classList.add('is-hidden');
 }
